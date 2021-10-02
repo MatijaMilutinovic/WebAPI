@@ -8,7 +8,6 @@ fetch("https://localhost:5001/Dostava/PreuzmiDostavu").then(p=>{
     p.json().then(data=> {
         data.forEach(dost=>{
             const dostava1 = new Dostava(dost.id, dost.ime);
-            console.log(dost.id + " " + dost.ime);
             console.log(dostava1.toString());
 
             dostava1.crtaj(document.body);
