@@ -16,16 +16,13 @@ export class Dostava {
         this.restorani.push(r);
     }
 
-    crtaj(rod){
+    crtaj(rodDocument, rod){
         if(!rod){
             throw new Error("Roditeljski element neispravan!");
         }
         else{
-            this.documen = rod;
-
-            this.kontejner = document.createElement("div");
-            this.kontejner.className = "kontejner";
-            rod.appendChild(this.kontejner);
+            this.documen = rodDocument;
+            this.kontejner = rod;
 
 
             const kontejnerCeleDostave = document.createElement("div");
@@ -69,7 +66,7 @@ export class Dostava {
                     kontejnerSvihRestorana.removeChild(kontejnerSvihRestorana.lastChild);
                 };
 
-                    fetch("https://localhost:5001/Dostava/PreuzmiRestorane").then(r=>{
+                    fetch("https://localhost:5001/Dostava/PreuzmiRestorane/").then(r=>{
                     r.json().then(data=> {
                         data.forEach(rest=>{
                             //console.log("Restoran nadjen!");
@@ -77,22 +74,42 @@ export class Dostava {
                         // console.log(rest.ime);
                             const restoran1 = new Restoran(rest.id, rest.ime);
                             
-                                    fetch("https://localhost:5001/Dostava/PreuzmiProizvode").then(p=>{
+                                    
+                            
+                            fetch("https://localhost:5001/Dostava/PreuzmiSveProizvodeJednogRestorana/" + restoran1.id).then(p=>{
                                         p.json().then(data=> {
                                             data.forEach(proi=>{
-                                                if(this.isCorrectID(restoran1.id, proi.id)){
-                                                //console.log("Restoran nadjen!");
-                                                //if(restoran1.id == proi.Restoranid){
-                                                // console.log(rest.ime);
+                                                
                                                     const proizvod1 = new Proizvod(proi.id, proi.ime, proi.cena, proi.sastojci);
                                                     //console.log(proizvod1.toString());
                                                     restoran1.dodajProizvod(proizvod1, this.kontejnerProizvodaKorpeGlobal,  this.documen);
                                                     //console.log(proi.Restoran.id);
                                                // };
-                                                }
+                                                
                                             });
                                         });
                                     });
+                            
+                            
+                            
+                            // fetch("https://localhost:5001/Dostava/PreuzmiProizvode").then(p=>{
+                            //             p.json().then(data=> {
+                            //                 data.forEach(proi=>{
+                            //                     if(this.isCorrectID(restoran1.id, proi.id)){
+                            //                     //console.log("Restoran nadjen!");
+                            //                     //if(restoran1.id == proi.Restoranid){
+                            //                     // console.log(rest.ime);
+                            //                         const proizvod1 = new Proizvod(proi.id, proi.ime, proi.cena, proi.sastojci);
+                            //                         //console.log(proizvod1.toString());
+                            //                         restoran1.dodajProizvod(proizvod1, this.kontejnerProizvodaKorpeGlobal,  this.documen);
+                            //                         //console.log(proi.Restoran.id);
+                            //                    // };
+                            //                     }
+                            //                 });
+                            //             });
+                            //         });
+
+                            // gore je stari nacin nabavljanja, sada se koristi bolji
                 
 
                         restoran1.crtajRestoran(kontejnerSvihRestorana);
@@ -102,8 +119,67 @@ export class Dostava {
                 });
             //     //Prikazi sve restorane na osnovu filtera
             }; 
+            // Dugme end
 
-            this.crtajNovaDostavaFormu();
+            const inputPromeniNaziv = document.createElement("input");
+            kontejnerDostave.appendChild(inputPromeniNaziv);
+
+            const dugmePromeni = document.createElement("button");
+            dugmePromeni.innerHTML = "Promeni naziv";
+            dugmePromeni.className = "dugmePromeni";
+            kontejnerDostave.appendChild(dugmePromeni);
+            dugmePromeni.onclick = (ev) =>{
+                const novoImeDostave = inputPromeniNaziv.value;
+                kontejnerDostave.querySelector(".imeDostave").innerHTML = novoImeDostave;
+                try{
+                    fetch("https://localhost:5001/Dostava/IzmeniDostavu/",
+                    {
+                        method: "PUT",
+                        headers:
+                        {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify
+                        ({
+                            ID: this.id,
+                            Ime: novoImeDostave
+                        })
+                    }).then(resp =>{
+                        if(resp.ok){
+                        kontejnerDostave.querySelector(".imeDostave").innerHTML = novoImeDostave;
+                        this.ime = novoImeDostave;
+                        alert("Ime dostave promenjeno!");
+                        }
+                    });
+                }
+                catch(err){
+                    alert(err);
+                }
+            }
+
+            const dugmeIzbrisi = document.createElement("button");
+            dugmeIzbrisi.innerHTML = "Izbrisi dostavu";
+            dugmeIzbrisi.className = "dugmeIzbrisi";
+            kontejnerDostave.appendChild(dugmeIzbrisi);
+            dugmeIzbrisi.onclick = (ev) =>{
+                try{
+                    fetch("https://localhost:5001/Dostava/IzbrisiDostavu/" + this.id,{
+                        method: "DELETE",
+                        headers: 
+                        {
+                            "Content-type": "application/json"
+                        }
+                    }).then(resp =>{
+                        if(resp.ok){
+                            alert("Dostava uspesno izbrisana!");
+                            this.kontejner.removeChild(kontejnerCeleDostave);
+                        }
+                    })
+                }
+                catch(err){
+                    alert(err);
+                }
+            }
 
 
 
@@ -184,7 +260,7 @@ export class Dostava {
         return (proiid-proiid%4)/4+(proiid%4==0?0:1) == restid;
     }
 
-    crtajNovaDostavaFormu(rod){
+    crtajNovaDostavaFormu(){
         const kontejnerNovaDostava = document.createElement("div");
             kontejnerNovaDostava.className = "kontejnerNovaDostava";
             this.kontejner.appendChild(kontejnerNovaDostava);
@@ -200,10 +276,47 @@ export class Dostava {
 
             const dugmeNovaDostava = document.createElement("button");
             dugmeNovaDostava.innerHTML = "Napravi";
+            dugmeNovaDostava.className = "dugme";
             kontejnerNovaDostava.appendChild(dugmeNovaDostava);
             dugmeNovaDostava.onclick = (ev) =>{
-                const novoIme = imeDostave.value;
-                console.log(novoIme);
+                const imeNoveDostave = imeDostave.value;
+                try{
+                    fetch("https://localhost:5001/Dostava/UpisiDostavu/",{
+                        method: "POST",
+                        headers:{ 
+                            "Content-type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            Ime: imeNoveDostave
+                        })                        
+                    }).then(resp =>{
+                        if(resp.ok){
+                            alert("Nova dostava napravljena!");
+                            const dos1 = new Dostava(2, imeNoveDostave);
+                            dos1.crtaj(this.documen, this.kontejner);
+                        }
+                    })
+                }
+                catch(err){
+                    alert(err);
+                }
             }
+    }
+
+    crtajCeoKontejner(rod){
+        if(!rod){
+            throw new Error("Roditeljski element neispravan!");
+        }
+        else{
+            this.documen = rod;
+
+            this.kontejner = document.createElement("div");
+            this.kontejner.className = "kontejner";
+            rod.appendChild(this.kontejner);
+            this.crtajNovaDostavaFormu();
+            return true;
+
+            
+        }
     }
 }

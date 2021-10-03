@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+//using System.Windows.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -33,23 +34,38 @@ namespace WebAPI.Controllers
 
         [Route("IzmeniDostavu")]
         [HttpPut]
-        public async Task IzmeniDostavu([FromBody] Dostava dostava){
-            Context.Update<Dostava>(dostava);
-            await Context.SaveChangesAsync();
+        public async Task IzmeniDostavu(Dostava dos){
+            //var updostava = Context.Dostave.Where(d => d.Ime == dos.Ime).First();
+            // if(updostava != null){
+            // //(Context.Dostave.Where(d => d.Ime == imeDostave).Any()){
+            // //   MessageBox.Show("asdf"); 
+
+            // }
+            // else{
+
+                Context.Dostave.Update(dos);
+                await Context.SaveChangesAsync();
+                // updostava.Ime = imeDostave;
+                // var novaDostava = new Dostava{ID = updostava.ID, Ime = imeDostave};
+                // //var dos = new Dostava() {Ime = imeDostave};
+                // Context.Update<Dostava>(novaDostava);
+                // //Context.Entry(updostava).Property("Ime").IsModified = true;
+                // await Context.SaveChangesAsync();
+            //}
         }
 
         [Route("IzbrisiDostavu/{id}")]
         [HttpDelete]
         public async Task IzbrisiDostavu(int id){
-            var res = Context.Proizvodi.Where(s=>s.Restoran.ID == id);
-            await res.ForEachAsync(s=>{
-                Context.Remove(s);
-            });
+            // var res = Context.Proizvodi.Where(s=>s.Restoran.ID == id);
+            // await res.ForEachAsync(s=>{
+            //     Context.Remove(s);
+            // });
 
-            var proi = Context.Restorani.Where(s=>s.Dostava.ID == id);
-            await proi.ForEachAsync(s=>{
-                Context.Remove(s);
-            });
+            // var proi = Context.Restorani.Where(s=>s.Dostava.ID == id);
+            // await proi.ForEachAsync(s=>{
+            //     Context.Remove(s);
+            // });
 
             var dos = await Context.Dostave.FindAsync(id);
             Context.Remove(dos);
@@ -57,12 +73,28 @@ namespace WebAPI.Controllers
             }
 
 
-
+        [Route("PreuzmiRestoraneJedneDostave/{id}")]
+        [HttpGet]
+        public async Task<List<Restoran>> PreuzmiRestoraneJedneDostave(int id){
+            
+            //var rest = await Context.Restorani.ToListAsync();
+            // foreach(Restoran item in rest)
+            // {
+            //     Console.WriteLine(item.Dostava.Ime);
+            // };
+            return await Context.Restorani.Where(x => x.Dostava.ID == id).ToListAsync();
+        }
 
 
         [Route("PreuzmiRestorane")]
         [HttpGet]
-        public async Task<List<Restoran>> PreuzmiRestane(){
+        public async Task<List<Restoran>> PreuzmiRestorane(){
+            
+            //var rest = await Context.Restorani.ToListAsync();
+            // foreach(Restoran item in rest)
+            // {
+            //     Console.WriteLine(item.Dostava.Ime);
+            // };
             return await Context.Restorani.ToListAsync();
         }
 
@@ -102,6 +134,12 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<List<Proizvod>> PreuzmiProizvode(){
             return await Context.Proizvodi.ToListAsync();
+        }
+
+        [Route("PreuzmiSveProizvodeJednogRestorana/{id}")]
+        [HttpGet]
+        public async Task<List<Proizvod>> PreuzmiSveProizvodeJednogRestorana(int id){
+            return await Context.Proizvodi.Where(x => x.Restoran.ID == id).ToListAsync();
         }
 
         [Route("UpisiProizvod")]

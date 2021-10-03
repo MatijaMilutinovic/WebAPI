@@ -16,6 +16,7 @@ namespace WebAPI.Models
         public string Ime { get; set; }
 
         [Column("Filter")]
+        [MaxLength(255)]
         public string Filter { get; set; }
 
         public virtual List<Proizvod> Proizvodi { get; set; }
