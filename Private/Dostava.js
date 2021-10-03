@@ -122,6 +122,7 @@ export class Dostava {
             // Dugme end
 
             const inputPromeniNaziv = document.createElement("input");
+            inputPromeniNaziv.className = "input";
             kontejnerDostave.appendChild(inputPromeniNaziv);
 
             const dugmePromeni = document.createElement("button");

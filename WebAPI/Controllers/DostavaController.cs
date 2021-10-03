@@ -34,7 +34,7 @@ namespace WebAPI.Controllers
 
         [Route("IzmeniDostavu")]
         [HttpPut]
-        public async Task IzmeniDostavu(Dostava dos){
+        public async Task IzmeniDostavu([FromBody] Dostava dos){
             //var updostava = Context.Dostave.Where(d => d.Ime == dos.Ime).First();
             // if(updostava != null){
             // //(Context.Dostave.Where(d => d.Ime == imeDostave).Any()){
